@@ -30,8 +30,8 @@ This bot is designed to automate various tasks on the Pharos testnet network, in
 
 1.  **Clone this repository**:
     ```bash
-    git clone [https://github.com/your-username/pharos-season-2-multi-task-bot.git](https://github.com/your-username/pharos-season-2-multi-task-bot.git)
-    cd pharos-season-2-multi-task-bot
+    git clone https://github.com/anggafajarsidik/OFFpharosS2
+    cd OFFpharosS2
     ```
 
 2.  **Install dependencies**:
