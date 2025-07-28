@@ -635,7 +635,7 @@ export class AutoStakingBot {
             const transactionData = "0x4fe15335";
             let gasPrice;
             try { gasPrice = await web3.eth.getGasPrice();
-            } catch (err) { gasPrice = web3.utils.toWei('1.2', 'gwei');
+            } catch (err) { gasPrice = web3.utils.toWei('2.5', 'gwei');
             }
             
             const tx = {
@@ -720,7 +720,7 @@ export class AutoStakingBot {
             targetContract = "0x11cD3700B310339003641Fdce57c1f9BD21aE015";
         }
         
-        const gasPrice = web3.utils.toWei('1.2', 'gwei');
+        const gasPrice = web3.utils.toWei('2.5', 'gwei');
         const tx = {
             chainId: this.config.CHAIN_ID,
             data: transactionData,
