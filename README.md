@@ -56,8 +56,8 @@ Create the following files in the project's root directory:
     If you want to use proxies, enter one proxy per line. The bot will try to match proxies to private keys based on order (the first private key will use the first proxy, etc.). If no proxies are provided or fewer than private keys, accounts without a proxy will run without one.
     Proxy format: `http://user:pass@ip:port` or `http://ip:port`
     ```
-    [http://user1:pass1@192.168.1.1:8080](http://user1:pass1@192.168.1.1:8080)
-    [http://user2:pass2@192.168.1.2:8080](http://user2:pass2@192.168.1.2:8080)
+    http://user1:pass1@192.168.1.1:8080
+    http://user2:pass2@192.168.1.2:8080
     ```
 
 3.  **`usernames.txt` (Optional, required for Primus Tip)**:
