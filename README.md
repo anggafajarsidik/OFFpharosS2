@@ -77,7 +77,7 @@ Create the following files in the project's root directory:
 
 ## How to Run
 
-1.  Ensure all configuration files (`YourPrivateKey.txt`, `proxy.txt`, `usernames.txt`, `abiprimuslabs.json`) are set up.
+1.  Ensure all configuration files (`YourPrivateKey.txt`, `proxy.txt`, `usernames.txt`) are set up.
 
 2.  Run the script:
     ```bash
