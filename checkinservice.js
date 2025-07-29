@@ -15,20 +15,20 @@ export class CheckinClient {
 
     async login() {
         try {
-            this.logWrapper("Signing authentication message...", "\x1b[34m", '✍️');
+            this.logWrapper("Signing authentication message...", 'FgBlue', '✍️');
             const signature = await this.wallet.signMessage("pharos");
             const loginUrl = `/user/login?address=${this.address}&signature=${signature}&invite_code=`;
             const data = await this.makeSignedRequest(loginUrl, 'post', false);
             if (data && data.code === 0 && data.data && data.data.jwt) {
                 this.authToken = data.data.jwt;
-                this.logWrapper("Authentication successful, token received.", "\x1b[32m", '✅');
+                this.logWrapper("Authentication successful, token received.", 'FgGreen', '✅');
                 return true;
             } else {
-                this.logWrapper(`Authentication failed: ${data.msg || 'No JWT in response'}`, "\x1b[31m", '❌');
+                this.logWrapper(`Authentication failed: ${data.msg || 'No JWT in response'}`, 'FgRed', '❌');
                 return false;
             }
         } catch (error) {
-            this.logWrapper(`Login process failed: ${error.message}`, "\x1b[31m", '🚨');
+            this.logWrapper(`Login process failed: ${error.message}`, 'FgRed', '🚨');
             return false;
         }
     }
@@ -55,38 +55,38 @@ export class CheckinClient {
             }
             return await response.json();
         } catch (error) {
-            this.logWrapper(`Request to ${endpoint} failed: ${error.message}`, "\x1b[31m", '❌');
+            this.logWrapper(`Request to ${endpoint} failed: ${error.message}`, 'FgRed', '❌');
             throw error;
         }
     }
 
     async getCheckinStatus() {
-        this.logWrapper("Fetching check-in status...", "\x1b[34m", '🔍');
+        this.logWrapper("Fetching check-in status...", 'FgBlue', '🔍');
         const data = await this.makeSignedRequest(`/sign/status?address=${this.address}`);
         if (data && data.code === 0 && data.data && typeof data.data.status === 'string') {
             const statusArray = data.data.status;
             const dayIndex = (new Date().getDay() + 6) % 7;
             if (statusArray[dayIndex] === '2') {
-                this.logWrapper("Check-in is available for today.", "\x1b[32m", '✅');
+                this.logWrapper("Check-in is available for today.", 'FgGreen', '✅');
                 return true;
             } else {
-                this.logWrapper("Already checked in today.", "\x1b[33m", '👍');
+                this.logWrapper("Already checked in today.", 'FgYellow', '👍');
                 return false;
             }
         }
-        this.logWrapper(`Could not determine check-in status. Response: ${JSON.stringify(data)}`, "\x1b[31m", '❌');
+        this.logWrapper(`Could not determine check-in status. Response: ${JSON.stringify(data)}`, 'FgRed', '❌');
         return false;
     }
 
     async performCheckin() {
-        this.logWrapper("Attempting to perform daily check-in...", "\x1b[34m", '➡️');
+        this.logWrapper("Attempting to perform daily check-in...", 'FgBlue', '➡️');
         const data = await this.makeSignedRequest(`/sign/in?address=${this.address}`, 'post');
         if (data && data.code === 0) {
-            this.logWrapper("Daily check-in successful!", "\x1b[32m", '🎉');
+            this.logWrapper("Daily check-in successful!", 'FgGreen', '🎉');
             return true;
         } else {
             const errorMessage = data.msg || 'Unknown error';
-            this.logWrapper(`Check-in failed: ${errorMessage}`, "\x1b[31m", '❌');
+            this.logWrapper(`Check-in failed: ${errorMessage}`, 'FgRed', '❌');
             return false;
         }
     }
@@ -94,7 +94,7 @@ export class CheckinClient {
     async runCheckinForAccount() {
         const isLoggedIn = await this.login();
         if (!isLoggedIn) {
-            this.logWrapper("Cannot proceed with check-in without a successful login.", "\x1b[31m", '🛑');
+            this.logWrapper("Cannot proceed with check-in without a successful login.", 'FgRed', '🛑');
             return;
         }
         try {
@@ -104,7 +104,7 @@ export class CheckinClient {
                 await this.performCheckin();
             }
         } catch (error) {
-            this.logWrapper(`Check-in process stopped due to an error.`, "\x1b[31m", '🚨');
+            this.logWrapper(`Check-in process stopped due to an error.`, 'FgRed', '🚨');
         }
     }
 }
