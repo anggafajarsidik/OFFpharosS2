@@ -36,9 +36,7 @@ This bot is designed to automate various tasks on the Pharos testnet network, in
 
 2.  **Install dependencies**:
     ```bash
-    pnpm install
-    # or
-    npm install
+    npm install node-fetch abort-controller ethers https-proxy-agent user-agents readline axios web3 moment-timezone
     ```
 
 ## Configuration
