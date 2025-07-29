@@ -3,7 +3,6 @@ import { ethers } from 'ethers';
 import axios from 'axios';
 import moment from 'moment-timezone';
 import fs from 'fs/promises';
-import readline from 'readline';
 
 const Colors = {
     RESET: '\x1b[0m',
@@ -25,7 +24,6 @@ const Colors = {
     FG_LIGHTGREEN: '\x1b[92m',
 
     BG_BLACK: '\x1b[40m',
-    
     BG_RED: '\x1b[41m',
     BG_GREEN: '\x1b[42m',
     BG_YELLOW: '\x1b[43m',
@@ -34,6 +32,7 @@ const Colors = {
     BG_CYAN: '\x1b[46m',
     BG_WHITE: '\x1b[47m'
 };
+
 class AutoStakingConfig {
     constructor() {
         this.HEADERS = {
@@ -42,7 +41,7 @@ class AutoStakingConfig {
             "Accept-Language": "en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7,hi;q=0.6,te;q=0.5",
             "Origin": "https://autostaking.pro",
             "Referer": "https://autostaking.pro/",
-            "Sec-Fetch-Dest": 
+            "Sec-Fetch-Dest":
             "empty",
             "Sec-Fetch-Mode": "cors",
             "Sec-Fetch-Site": "same-site",
@@ -51,7 +50,6 @@ class AutoStakingConfig {
             "sec-ch-ua-mobile": "?0",
             "sec-ch-ua-platform": '"Windows"',
             "priority": "u=1, i",
-     
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
         };
         this.BASE_API = "https://api.autostaking.pro";
@@ -67,43 +65,37 @@ class AutoStakingConfig {
         this.CONTRACT_ABI = [
             {
                 "inputs": [{"internalType": "address", "name": "owner", "type": "address"},
-                          {"internalType": "address", "name": "spender", "type": "address"}],
+                                {"internalType": "address", "name": "spender", "type": "address"}],
                 "name": "allowance",
-          
                 "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
                 "stateMutability": "view",
                 "type": "function"
             },
             {
                 "inputs": [{"internalType": "address", "name": "user", "type": "address"}],
-        
                 "name": "canClaimFaucet",
                 "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
                 "stateMutability": "view",
                 "type": "function"
             },
             {
-           
                 "inputs": [{"internalType": "address", "name": "user", "type": "address"}],
                 "name": "getNextFaucetClaimTime",
                 "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
                 "stateMutability": "view",
                 "type": "function"
             },
-    
             {
                 "constant": false,
                 "inputs": [
                     { "name": "_spender", "type": "address" },
                     { "name": "_value", "type": "uint256" }
-        
                 ],
                 "name": "approve",
                 "outputs": [{ "name": "", "type": "bool" }],
                 "payable": false,
                 "stateMutability": "nonpayable",
                 "type": "function"
-  
             }
         ];
         this.DEBUG_MODE = false;
@@ -123,10 +115,11 @@ class AutoStakingUtils {
     clearTerminal() {
     }
 
-    log(message, color = Colors.RESET, symbol = '➡️') {
+    log(message, color = 'RESET', symbol = '➡️') {
         const timestamp = new Date().toLocaleTimeString();
         const prefix = 'AUTOSTAKING_PRO';
-        console.log(`${color}${symbol} [${timestamp}] ${prefix}: ${message}${Colors.RESET}`);
+        const actualColorCode = Colors[color] || Colors.RESET;
+        console.log(`${actualColorCode}${symbol} [${timestamp}] ${prefix}: ${message}${Colors.RESET}`);
     }
 
     welcome() {
@@ -145,17 +138,17 @@ class AutoStakingUtils {
             const data = await fs.readFile(filename, 'utf8');
             const proxies = data.split('\n').map(line => line.trim()).filter(line => line.length > 0);
             if (!proxies.length) {
-                this.log(`${Colors.FG_RED}${Colors.BRIGHT}No proxies found in ${filename}${Colors.RESET}`);
+                this.log(`No proxies found in ${filename}`, 'FG_RED', '⚠️');
                 return;
             }
 
             this.proxies = proxies;
-            this.log(`${Colors.FG_GREEN}${Colors.BRIGHT}Loaded ${this.proxies.length} proxies${Colors.RESET}`);
+            this.log(`Loaded ${this.proxies.length} proxies`, 'FG_GREEN', '✅');
         } catch (e) {
             if (e.code === 'ENOENT') {
-                this.log(`${Colors.FG_RED}${Colors.BRIGHT}Proxy file not found: ${filename}${Colors.RESET}`);
+                this.log(`Proxy file not found: ${filename}`, 'FG_RED', '❌');
             } else {
-                this.log(`${Colors.FG_RED}${Colors.BRIGHT}Error loading proxies: ${e.message}${Colors.RESET}`);
+                this.log(`Error loading proxies: ${e.message}`, 'FG_RED', '❌');
             }
         }
     }
@@ -196,13 +189,13 @@ class AutoStakingUtils {
     generateAddress(privateKey) {
         try {
             if (typeof privateKey !== 'string' || !privateKey.match(/^(0x)?[0-9a-fA-F]{64}$/)) {
-                this.log(`${Colors.FG_RED}${Colors.BRIGHT}Invalid private key format. Must be a 64-char hex string (optional 0x prefix).${Colors.RESET}`);
+                this.log(`Invalid private key format. Must be a 64-char hex string (optional 0x prefix).`, 'FG_RED', '❌');
                 return null;
             }
             const wallet = new ethers.Wallet(privateKey);
             return wallet.address;
         } catch (e) {
-            this.log(`${Colors.FG_RED}${Colors.BRIGHT}Error generating address: ${e.message}${Colors.RESET}`);
+            this.log(`Error generating address: ${e.message}`, 'FG_RED', '❌');
             return null;
         }
     }
@@ -214,7 +207,7 @@ class AutoStakingUtils {
             }
             return `${account.substring(0, 6)}...${account.substring(account.length - 4)}`;
         } catch (e) {
-            this.log(`${Colors.FG_RED}${Colors.BRIGHT}Error masking account: ${e.message}${Colors.RESET}`);
+            this.log(`Error masking account: ${e.message}`, 'FG_RED', '❌');
             return "Unknown";
         }
     }
@@ -238,12 +231,13 @@ Sign in to authenticate your wallet.\n\nURI: https://autostaking.pro\nVersion: 1
             const signature = await wallet.signMessage(message);
 
             if (typeof signature !== 'string' || !signature.startsWith('0x') || signature.length !== 132) {
-                this.log(`${Colors.FG_RED}${Colors.BRIGHT}Warning: Signature format is incorrect. Expected 0x-prefixed 130-char hex string (total 132 chars). Got: ${signature ? signature.length : 'undefined'} chars. Signature value: ${signature}${Colors.RESET}`);
+                this.log(`Warning: Signature format is incorrect. Expected 0x-prefixed 130-char hex string (total 132 chars). Got: ${signature ? signature.length : 'undefined'} chars. Signature value: ${signature}`, 'FG_YELLOW', '⚠️');
                 return null;
             }
             return signature;
-        } catch (e) {
-            this.log(`${Colors.FG_RED}${Colors.BRIGHT}Error signing message: ${e.message}${Colors.RESET}`);
+        }
+        catch (e) {
+            this.log(`Error signing message: ${e.message}`, 'FG_RED', '❌');
             return null;
         }
     }
@@ -266,13 +260,13 @@ class AutoStakingWeb3Operations {
                 web3Instance = new Web3(new Web3.providers.HttpProvider(this.config.RPC_URL, providerOptions));
                 const latestBlockNumber = await web3Instance.eth.getBlockNumber();
                 if (latestBlockNumber !== null && latestBlockNumber !== undefined) {
-                    this.utils.log(`Web3 connected - Latest Block: ${latestBlockNumber}`);
+                    this.utils.log(`Web3 connected - Latest Block: ${latestBlockNumber}`, 'FG_GREEN', '✅');
                     return web3Instance;
                 } else {
-                    this.utils.log(`Web3 connection failed: getBlockNumber returned null/undefined.`);
+                    this.utils.log(`Web3 connection failed: getBlockNumber returned null/undefined.`, 'FG_RED', '❌');
                 }
             } catch (e) {
-                this.utils.log(`Web3 connection attempt ${attempt + 1} failed: ${e.message}`);
+                this.utils.log(`Web3 connection attempt ${attempt + 1} failed: ${e.message}`, 'FG_YELLOW', '⚠️');
             }
             if (attempt < retries - 1) {
                 await new Promise(resolve => setTimeout(resolve, 2000));
@@ -292,7 +286,7 @@ class AutoStakingWeb3Operations {
                 const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
                 return receipt.transactionHash;
             } catch (e) {
-                this.utils.log(`Transaction attempt ${attempt + 1} failed: ${e.message}`);
+                this.utils.log(`Transaction attempt ${attempt + 1} failed: ${e.message}`, 'FG_YELLOW', '⚠️');
                 if (attempt < retries - 1) {
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
@@ -309,7 +303,7 @@ class AutoStakingWeb3Operations {
                     return receipt;
                 }
             } catch (e) {
-                this.utils.log(`Receipt attempt ${attempt + 1} failed: ${e.message}`);
+                this.utils.log(`Receipt attempt ${attempt + 1} failed: ${e.message}`, 'FG_YELLOW', '⚠️');
             }
             if (attempt < retries - 1) {
                 await new Promise(resolve => setTimeout(resolve, 5000));
@@ -328,12 +322,12 @@ class AutoStakingWeb3Operations {
                 const currentTime = Math.floor(Date.now() / 1000);
                 const waitTime = Number(nextClaimTime) - currentTime;
                 if (waitTime > 0) {
-                    this.utils.log(`⏳ Faucet cooldown: ${Math.floor(waitTime / 3600)}h ${Math.floor((waitTime % 3600) / 60)}m remaining`);
+                    this.utils.log(`Faucet cooldown: ${Math.floor(waitTime / 3600)}h ${Math.floor((waitTime % 3600) / 60)}m remaining`, 'FG_YELLOW', '⏳');
                 }
             }
             return canClaim;
         } catch (e) {
-            this.utils.log(`⚠️ Error checking faucet eligibility: ${e.message}`);
+            this.utils.log(`Error checking faucet eligibility: ${e.message}`, 'FG_RED', '⚠️');
             return true;
         }
     }
@@ -346,11 +340,11 @@ class AutoStakingWeb3Operations {
                 web3.utils.toChecksumAddress(this.config.APPROVAL_SPENDER)
             ).call();
             const requiredAmount = BigInt(this.config.APPROVAL_AMOUNT);
-            this.utils.log(`🔍 Current Allowance: ${allowance} | Required: ${requiredAmount}`);
+            this.utils.log(`Current Allowance: ${allowance} | Required: ${requiredAmount}`, 'FG_CYAN', '🔍');
 
             return BigInt(allowance) >= requiredAmount;
         } catch (e) {
-            this.utils.log(`⚠️ Error checking allowance: ${e.message}`);
+            this.utils.log(`Error checking allowance: ${e.message}`, 'FG_RED', '⚠️');
             return false;
         }
     }
@@ -364,7 +358,7 @@ class AutoStakingWeb3Operations {
             ).call();
             return BigInt(allowance);
         } catch (e) {
-            this.utils.log(`❌ Error getting actual allowance value: ${e.message}`);
+            this.utils.log(`Error getting actual allowance value: ${e.message}`, 'FG_RED', '❌');
             return BigInt(0);
         }
     }
@@ -390,20 +384,19 @@ class AutoStakingWeb3Operations {
             gas: '0xbf3f',
             gasPrice: gasPrice,
             nonce: currentNonce,
-           
             to: web3.utils.toChecksumAddress(this.config.TOKEN_CONTRACT),
             value: '0x0'
         };
         if (logDetails) {
-            this.utils.log(`🔧 Gas Price: ${web3.utils.fromWei(gasPrice, 'gwei')} gwei`);
-            this.utils.log(`🎯 Approving spender: ${this.config.APPROVAL_SPENDER} with amount: ${amount}`);
+            this.utils.log(`Gas Price: ${web3.utils.fromWei(gasPrice, 'gwei')} gwei`, 'DIM', '🔧');
+            this.utils.log(`Approving spender: ${this.config.APPROVAL_SPENDER} with amount: ${amount}`, 'DIM', '🎯');
         }
 
         try {
             const txHash = await this.sendRawTransactionWithRetries(privateKey, web3, tx);
             return txHash;
         } catch (e) {
-            this.utils.log(`❌ Failed to send approval transaction: ${e.message}`);
+            this.utils.log(`Failed to send approval transaction: ${e.message}`, 'FG_RED', '❌');
             return null;
         }
     }
@@ -418,14 +411,14 @@ class AutoStakingAPIOperations {
     }
 
     async performLogin(privateKey, address, proxyAgent) {
-        this.utils.log(`ℹ️ Autentikasi langsung dengan API (tanpa endpoint /user/login eksplisit).`, Colors.FgYellow, '➡️');
+        this.utils.log(`Authenticating directly with API (no explicit /user/login endpoint).`, 'FG_YELLOW', '➡️');
         this.privateKey = privateKey;
         this.address = address;
 
         return [true, "DUMMY_JWT_TOKEN"];
     }
 
-    async makeApiRequest(endpoint, payload, privateKey, address, proxyAgent) {
+    async makeApiRequest(endpoint, payload, privateKey, address, proxyAgent, retries = 3) {
         const agent = proxyAgent;
         let axiosConfig = {
             timeout: 30000,
@@ -436,42 +429,46 @@ class AutoStakingAPIOperations {
             axiosConfig.httpAgent = agent;
         }
 
-        try {
-            const nonce = this.utils.generateNonce();
-            const message = this.utils.createSiweMessage(address, nonce);
-            const signature = await this.utils.signMessage(privateKey, message);
+        for (let i = 0; i < retries; i++) {
+            try {
+                const nonce = this.utils.generateNonce();
+                const message = this.utils.createSiweMessage(address, nonce);
+                const signature = await this.utils.signMessage(privateKey, message);
 
-            if (signature) {
-                axiosConfig.headers['Authorization'] = `Bearer ${signature}`;
-                axiosConfig.headers['X-Signature'] = signature;
-                axiosConfig.headers['X-Address'] = address;
-                const currentTimestamp = Math.floor(Date.now() / 1000);
-                axiosConfig.headers['Cookie'] = `_ga=GA1.1.943571911.${currentTimestamp}; _ga_ZRD7GRM6F8=GS2.1.s${currentTimestamp}$o6$g1$t{currentTimestamp}$j60$l0$h0`;
+                if (signature) {
+                    axiosConfig.headers['Authorization'] = `Bearer ${signature}`;
+                    axiosConfig.headers['X-Signature'] = signature;
+                    axiosConfig.headers['X-Address'] = address;
+                    const currentTimestamp = Math.floor(Date.now() / 1000);
+                    axiosConfig.headers['Cookie'] = `_ga=GA1.1.943571911.${currentTimestamp}; _ga_ZRD7GRM6F8=GS2.1.s${currentTimestamp}$o6$g1$t{currentTimestamp}$j60$l0$h0`;
 
-            } else {
-                this.utils.log(`⚠️ Gagal membuat tanda tangan untuk permintaan API ke ${endpoint}.`, Colors.FgYellow, '⚠️');
+                } else {
+                    this.utils.log(`Failed to create signature for API request to ${endpoint}.`, 'FG_YELLOW', '⚠️');
+                }
+
+                const apiUrl = `${this.config.BASE_API}${endpoint}`;
+                const response = await axios.post(apiUrl, payload, axiosConfig);
+                return response.data;
+
+            } catch (e) {
+                this.utils.log(`Error API ${endpoint} (attempt ${i + 1}/${retries}): ${e.message}`, 'FG_RED', '🛑');
+                if (e.response) {
+                    this.utils.log(`Response Status (Error): ${e.response.status}`, 'FG_RED', '⚠️');
+                    this.utils.log(`Response Data (Error): ${JSON.stringify(e.response.data || {})}`, 'FG_RED', '🐛');
+                } else if (e.request) {
+                    this.utils.log(`No response received: ${e.request}`, 'FG_RED', '⚠️');
+                } else {
+                    this.utils.log(`Error setting up request: ${e.message}`, 'FG_RED', '⚠️');
+                }
+
+                if (i < retries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 3000 * Math.pow(2, i)));
+                } else {
+                    throw e;
+                }
             }
-        } catch (signError) {
-            this.utils.log(`❌ Error saat menyiapkan tanda tangan untuk API ke ${endpoint}: ${signError.message}`, Colors.FgRed, '🛑');
         }
-
-        const apiUrl = `${this.config.BASE_API}${endpoint}`;
-
-        try {
-            const response = await axios.post(apiUrl, payload, axiosConfig);
-            return response.data;
-        } catch (e) {
-            this.utils.log(`❌ Error API ${endpoint}: ${e.message}`, Colors.FgRed, '🛑');
-            if (e.response) {
-                this.utils.log(`Response Status (Error): ${e.response.status}`, Colors.FgRed, '⚠️');
-                this.utils.log(`Response Data (Error): ${JSON.stringify(e.response.data || {})}`, Colors.FgRed, '🐛');
-            } else if (e.request) {
-                this.utils.log(`No response received: ${e.request}`, Colors.FgRed, '⚠️');
-            } else {
-                this.utils.log(`Error setting up request: ${e.message}`, Colors.FgRed, '⚠️');
-            }
-            throw e;
-        }
+        return null;
     }
 
     async getMulticallTransactionData(jwtToken, address, proxyAgent) {
@@ -482,74 +479,60 @@ class AutoStakingAPIOperations {
             "changes": [
                 {
                     "type": "deposit",
-                  
                     "id": "deposit-1",
                     "token": {
                         "name": "USDC",
                         "address": "0x72df0bcd7276f2dFbAc900D1CE63c272C4BCcCED",
-          
                         "decimals": 6,
                         "chainId": 688688,
                         "price": 1,
-                       
                         "amount": "1000000"
                     },
                     "product": {
                         "provider": "MockVault",
-                
                         "chainId": 688688,
                         "address": "0xC6858c1C7047cEc35355Feb2a5Eb7bd1E051dDDf",
                         "depositAsset": {
-                             
                             "address": "0x72df0bcd7276f2dFbAc900D1CE63c272C4BCcCED",
                             "symbol": "USDC",
                             "name": "USDC",
-                              
                             "decimals": 6,
                             "chain": {"id": 688688}
                         },
                         "asset": {
-      
                             "address": "0xC6858c1C7047cEc35355Feb2a5Eb7bd1E051dDDf",
                             "symbol": "mvUSDC",
                             "decimals": 6,
-       
                             "name": "USDC Vault Shares",
                             "chain": {"id": 688688}
                         },
-          
                         "name": "USDC Vault",
                         "tvl": 25960387.547369,
                         "fee": 0,
-                      
                         "dailyApy": 0.08
                     },
                     "costs": {
                         "gasFee": 0.0075,
-               
                         "platformFee": 0
                     }
                 }
             ],
             "prevTransactionResults": {
-         
                 [`688688-0x72df0bcd7276f2dFbAc900D1CE63c272C4BCcCED`]: {
                     "progress": 0.5,
                     "type": "tx",
                     "ids": ["approval-1"],
-             
                     "from": address.toLowerCase(),
                     "to": "0x72df0bcd7276f2dFbAc900D1CE63c272C4BCcCED",
                     "data": `0x095ea7b300000000000000000000000011cd3700b310339003641fdce57c1f9bd21ae015${this.config.APPROVAL_AMOUNT.substring(2)}`,
                     "value": "0x0",
-             
                     "result": "0x" + "0".repeat(64)
                 }
             }
         };
 
-        this.utils.log(`🔄 Calling AutoStaking API for multicall data...`, Colors.FgBlue, '🔄');
-        
+        this.utils.log(`Calling AutoStaking API for multicall data...`, 'FG_BLUE', '🔄');
+
         try {
             const responseData = await this.makeApiRequest(
                 '/investment/generate-change-transactions',
@@ -559,34 +542,35 @@ class AutoStakingAPIOperations {
                 proxyAgent
             );
 
-            if (this.config.DEBUG_MODE) { 
-                this.utils.log(`🔍 Full Response: ${JSON.stringify(responseData)}`, Colors.FgCyan, '🔎');
-            } else { 
-                 this.utils.log(`🔍 Multicall API Response: Code ${responseData?.code}`, Colors.FgCyan, '🔍');
+            if (this.config.DEBUG_MODE) {
+                this.utils.log(`Full Response: ${JSON.stringify(responseData)}`, 'FG_CYAN', '🔎');
+            } else {
+                this.utils.log(`Multicall API Response: Code ${responseData?.code}`, 'FG_CYAN', '🔍');
             }
 
             if (responseData && responseData.code === 0 && responseData.data) {
                 for (const key in responseData.data) {
                     const txData = responseData.data[key];
                     if (txData.progress === 1 && txData.to === "0x11cD3700B310339003641Fdce57c1f9BD21aE015") {
-                        this.utils.log(`✅ Got multicall transaction data from API`, Colors.FgGreen, '✅');
+                        this.utils.log(`Got multicall transaction data from API`, 'FG_GREEN', '✅');
                         if (this.config.DEBUG_MODE) {
-                            this.utils.log(`   Tx Data: ${txData.data.substring(0, 50)}...`, Colors.FgDim);
-                            this.utils.log(`   To: ${txData.to}`, Colors.FgDim);
+                            this.utils.log(`Tx Data: ${txData.data.substring(0, 50)}...`, 'DIM', '');
+                            this.utils.log(`To: ${txData.to}`, 'DIM', '');
                         }
                         return [txData.data, txData.to];
                     }
                 }
-                this.utils.log(`⚠️ No relevant multicall transaction found in API response`, Colors.FgYellow, '⚠️');
+                this.utils.log(`No relevant multicall transaction found in API response`, 'FG_YELLOW', '⚠️');
                 return [null, null];
             } else {
-                this.utils.log(`❌ Multicall API call failed - ${responseData?.message || 'No specific message'}`, Colors.FgRed, '❌');
-                if (this.config.DEBUG_MODE) { 
-                    this.utils.log(`Response Data (Error): ${JSON.stringify(responseData || {})}`, Colors.FgRed, '🐛');
+                this.utils.log(`Multicall API call failed - ${responseData?.message || 'No specific message'}`, 'FG_RED', '❌');
+                if (this.config.DEBUG_MODE) {
+                    this.utils.log(`Response Data (Error): ${JSON.stringify(responseData || {})}`, 'FG_RED', '🐛');
                 }
                 return [null, null];
             }
         } catch (e) {
+            this.utils.log(`Error in getMulticallTransactionData: ${e.message}`, 'FG_RED', '🛑');
             return [false, null];
         }
     }
@@ -607,119 +591,137 @@ export class AutoStakingBot {
         let overallOperationSuccess = true;
         this.utils.setProxyAgent(proxyAgent);
 
-        this.utils.log(`--- Performing AutoStaking Login ---`, Colors.Bright, '🔑');
+        this.utils.log(`--- Performing AutoStaking Login ---`, 'BRIGHT', '🔑');
         const [loginSuccess, jwtToken] = await this.api_ops.performLogin(privateKey, address, proxyAgent);
         if (!loginSuccess) {
-            this.utils.log(`❌ AutoStaking Login Failed`, Colors.FgRed, '❌');
+            this.utils.log(`AutoStaking Login Failed`, 'FG_RED', '❌');
             return false;
         }
-        this.utils.log(`✅ AutoStaking Login Success`, Colors.FgGreen, '✅');
+        this.utils.log(`AutoStaking Login Success`, 'FG_GREEN', '✅');
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        this.utils.log(`--- Connecting to Web3 Provider ---`, Colors.Bright, '🔗');
+        this.utils.log(`--- Connecting to Web3 Provider ---`, 'BRIGHT', '🔗');
         const web3 = await this.web3_ops.getWeb3WithCheck(address, proxyAgent);
         if (!web3) {
-            this.utils.log(`❌ Failed to connect to Web3`, Colors.FgRed, '❌');
+            this.utils.log(`Failed to connect to Web3`, 'FG_RED', '❌');
             return false;
         }
 
-        this.utils.log(`--- Checking Faucet Eligibility ---`, Colors.Bright, '💧');
+        this.utils.log(`--- Checking Faucet Eligibility ---`, 'BRIGHT', '💧');
         const canClaim = await this.web3_ops.checkFaucetEligibility(web3, address);
         if (!canClaim) {
-            this.utils.log(`⏳ Faucet cooldown: Faucet claim not available yet (cooldown active)`);
+            this.utils.log(`Faucet cooldown: Faucet claim not available yet (cooldown active)`, 'FG_YELLOW', '⏳');
         } else {
-            this.utils.log(`🚰 Claiming faucet tokens...`, Colors.FgMagenta, '💸');
+            this.utils.log(`Claiming faucet tokens...`, 'FG_MAGENTA', '💸');
             const currentNonce = await web3.eth.getTransactionCount(address);
-            this.utils.log(`🔧 Using nonce: ${currentNonce}`, Colors.FgDim);
-            
+            this.utils.log(`Using nonce: ${currentNonce}`, 'DIM', '🔧');
+
             const transactionData = "0x4fe15335";
             let gasPrice;
             try { gasPrice = await web3.eth.getGasPrice();
             } catch (err) { gasPrice = web3.utils.toWei('2.5', 'gwei');
             }
-            
+
             const tx = {
                 chainId: this.config.CHAIN_ID,
                 data: transactionData, from: address, gas: '0x21db8', gasPrice: gasPrice, nonce: currentNonce,
                 to: web3.utils.toChecksumAddress(this.config.FAUCET_CONTRACT)
-      
             };
-            this.utils.log(`🔧 Faucet Gas Price: ${web3.utils.fromWei(gasPrice, 'gwei')} gwei`, Colors.FgDim);
-            const txHash = await this.web3_ops.sendRawTransactionWithRetries(privateKey, web3, tx);
-            if (txHash) {
-                this.utils.log(`✅ Faucet claim transaction sent: ${this.utils.EXPLORER_BASE_URL}${txHash}`, Colors.FgGreen, '✅');
-            } else {
-                this.utils.log(`❌ Faucet claim failed to send. Check logs for details.`, Colors.FgRed, '❌');
+            this.utils.log(`Faucet Gas Price: ${web3.utils.fromWei(gasPrice, 'gwei')} gwei`, 'DIM', '🔧');
+            try {
+                const txHash = await this.web3_ops.sendRawTransactionWithRetries(privateKey, web3, tx);
+                this.utils.log(`Faucet claim transaction sent: ${this.utils.EXPLORER_BASE_URL}${txHash}`, 'FG_GREEN', '✅');
+            } catch (e) {
+                this.utils.log(`Faucet claim failed to send: ${e.message}`, 'FG_RED', '❌');
                 overallOperationSuccess = false;
             }
         }
-        if (!overallOperationSuccess) return false;
+        if (!overallOperationSuccess) {
+            this.utils.log(`Skipping remaining AutoStaking steps due to previous failure.`, 'FG_YELLOW', '⚠️');
+            return false;
+        }
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        this.utils.log(`--- Approving Token Spending ---`, Colors.Bright, '💰');
+        this.utils.log(`--- Approving Token Spending ---`, 'BRIGHT', '💰');
         let hasSufficientAllowance = await this.web3_ops.checkAllowance(web3, address);
         if (hasSufficientAllowance) {
-            this.utils.log(`✅ Sufficient allowance already exists - skipping approval`, Colors.FgGreen, '👍');
+            this.utils.log(`Sufficient allowance already exists - skipping approval`, 'FG_GREEN', '👍');
         } else {
-            this.utils.log(`ℹ️ Current allowance insufficient or not found, attempting approval. Required: ${BigInt(this.config.APPROVAL_AMOUNT)}`, Colors.FgYellow, '⚠️');
+            this.utils.log(`Current allowance insufficient or not found, attempting approval. Required: ${BigInt(this.config.APPROVAL_AMOUNT)}`, 'FG_YELLOW', '⚠️');
             let approvalStepSuccess = true;
             let currentAllowanceCheckValue = await this.web3_ops.getActualAllowance(web3, address);
-            this.utils.log(`Actual current allowance value: ${currentAllowanceCheckValue}`, Colors.FgDim);
+            this.utils.log(`Actual current allowance value: ${currentAllowanceCheckValue}`, 'DIM', '');
             const requiredAmountBigInt = BigInt(this.config.APPROVAL_AMOUNT);
             if (currentAllowanceCheckValue > BigInt(0) && currentAllowanceCheckValue < requiredAmountBigInt) {
-                this.utils.log(`Current allowance (${currentAllowanceCheckValue}) is non-zero but insufficient. Attempting to reset allowance to 0 first...`, Colors.FgYellow, '🔄');
-                const txHashZero = await this.web3_ops.sendApprovalTransaction(privateKey, web3, address, BigInt(0), true);
-                if (txHashZero) {
-                    this.utils.log(`✅ Allowance reset to 0 transaction sent: ${this.utils.EXPLORER_BASE_URL}${txHashZero}`, Colors.FgGreen, '✅');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    currentAllowanceCheckValue = await this.web3_ops.getActualAllowance(web3, address);
-                    this.utils.log(`Allowance after reset to 0 (sent): ${currentAllowanceCheckValue}`, Colors.FgDim);
-                } else {
-                    this.utils.log(`❌ Sending allowance reset transaction failed.`, Colors.FgRed, '❌');
+                this.utils.log(`Current allowance (${currentAllowanceCheckValue}) is non-zero but insufficient. Attempting to reset allowance to 0 first...`, 'FG_YELLOW', '🔄');
+                try {
+                    const txHashZero = await this.web3_ops.sendApprovalTransaction(privateKey, web3, address, BigInt(0), true);
+                    if (txHashZero) {
+                        this.utils.log(`Allowance reset to 0 transaction sent: ${this.utils.EXPLORER_BASE_URL}${txHashZero}`, 'FG_GREEN', '✅');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        currentAllowanceCheckValue = await this.web3_ops.getActualAllowance(web3, address);
+                        this.utils.log(`Allowance after reset to 0 (sent): ${currentAllowanceCheckValue}`, 'DIM', '');
+                    } else {
+                        this.utils.log(`Sending allowance reset transaction failed.`, 'FG_RED', '❌');
+                        approvalStepSuccess = false;
+                    }
+                } catch (e) {
+                    this.utils.log(`Error during allowance reset: ${e.message}`, 'FG_RED', '❌');
                     approvalStepSuccess = false;
                 }
             }
-            
+
             if (approvalStepSuccess) {
-                this.utils.log(`Attempting to approve full amount: ${requiredAmountBigInt}`, Colors.FgBlue, '🔑');
-                const txHashFull = await this.web3_ops.sendApprovalTransaction(privateKey, web3, address, requiredAmountBigInt, true);
-                
-                if (txHashFull) {
-                    this.utils.log(`✅ Token approval transaction sent: ${this.utils.EXPLORER_BASE_URL}${txHashFull}`, Colors.FgGreen, '✅');
-                } else {
-                    this.utils.log(`❌ Sending full approval transaction failed.`, Colors.FgRed, '❌');
+                this.utils.log(`Attempting to approve full amount: ${requiredAmountBigInt}`, 'FG_BLUE', '🔑');
+                try {
+                    const txHashFull = await this.web3_ops.sendApprovalTransaction(privateKey, web3, address, requiredAmountBigInt, true);
+                    if (txHashFull) {
+                        this.utils.log(`Token approval transaction sent: ${this.utils.EXPLORER_BASE_URL}${txHashFull}`, 'FG_GREEN', '✅');
+                    } else {
+                        this.utils.log(`Sending full approval transaction failed.`, 'FG_RED', '❌');
+                        overallOperationSuccess = false;
+                    }
+                } catch (e) {
+                    this.utils.log(`Error during full approval: ${e.message}`, 'FG_RED', '❌');
                     overallOperationSuccess = false;
                 }
             } else {
-                 overallOperationSuccess = false;
+                overallOperationSuccess = false;
             }
         }
-        if (!overallOperationSuccess) return false;
+        if (!overallOperationSuccess) {
+            this.utils.log(`Skipping multicall due to approval failure.`, 'FG_YELLOW', '⚠️');
+            return false;
+        }
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        this.utils.log(`--- Performing Multicall Transaction ---`, Colors.Bright, '⚙️');
+        this.utils.log(`--- Performing Multicall Transaction ---`, 'BRIGHT', '⚙️');
         const currentNonce = await web3.eth.getTransactionCount(address);
-        this.utils.log(`🔧 Using nonce: ${currentNonce}`, Colors.FgDim);
+        this.utils.log(`Using nonce: ${currentNonce}`, 'DIM', '🔧');
         let transactionData = null;
         let targetContract = null;
-        const [apiData, apiContract] = await this.api_ops.getMulticallTransactionData(jwtToken, address, proxyAgent);
-        if (apiData && apiContract) {
-            transactionData = apiData;
-            targetContract = apiContract;
-            this.utils.log(`✅ Using API-generated multicall data`, Colors.FgGreen, '✅');
+        try {
+            const [apiData, apiContract] = await this.api_ops.getMulticallTransactionData(jwtToken, address, proxyAgent);
+            if (apiData && apiContract) {
+                transactionData = apiData;
+                targetContract = apiContract;
+                this.utils.log(`Using API-generated multicall data`, 'FG_GREEN', '✅');
+            }
+        } catch (e) {
+            this.utils.log(`Failed to get API-generated multicall data: ${e.message}. Using fallback.`, 'FG_YELLOW', '⚠️');
         }
-        
+
         if (!transactionData) {
-            this.utils.log(`⚠️ Using fallback transaction data for multicall`, Colors.FgYellow, '⚠️');
+            this.utils.log(`Using fallback transaction data for multicall`, 'FG_YELLOW', '⚠️');
             const exactTransactionData = "0xac9650d80000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000064f9984acd000000000000000000000000c6858c1c7047cec35355feb2a5eb7bd1e051dDDf000000000000000000000000000000000000000000000000000000003b9f5379";
-            
+
             const dynamicAddressPart = `00000000000000000000000${address.substring(2).toLowerCase()}`;
             const finalPadding = "00000000000000000000000000000000000000000000000000000000";
-            
+
             transactionData = `${exactTransactionData}${dynamicAddressPart}${finalPadding}`;
             targetContract = "0x11cD3700B310339003641Fdce57c1f9BD21aE015";
         }
-        
+
         const gasPrice = web3.utils.toWei('2.5', 'gwei');
         const tx = {
             chainId: this.config.CHAIN_ID,
@@ -729,26 +731,30 @@ export class AutoStakingBot {
             gasPrice: gasPrice,
             nonce: currentNonce,
             to: web3.utils.toChecksumAddress(targetContract),
-      
             value: '0x0'
         };
-        this.utils.log(`🔧 Multicall Tx Data (first 100 chars): ${transactionData.substring(0, 100)}...`, Colors.FgDim); 
-        this.utils.log(`🔧 Multicall Target Contract: ${targetContract}`, Colors.FgDim);
-        this.utils.log(`🔧 Multicall Gas Price: ${web3.utils.fromWei(tx.gasPrice, 'gwei')} gwei`, Colors.FgDim);
+        this.utils.log(`Multicall Tx Data (first 100 chars): ${transactionData.substring(0, 100)}...`, 'DIM', '🔧');
+        this.utils.log(`Multicall Target Contract: ${targetContract}`, 'DIM', '🔧');
+        this.utils.log(`Multicall Gas Price: ${web3.utils.fromWei(tx.gasPrice, 'gwei')} gwei`, 'DIM', '🔧');
 
-        const txHash = await this.web3_ops.sendRawTransactionWithRetries(privateKey, web3, tx);
-        if (txHash) {
-            this.utils.log(`✅ Multicall transaction sent: ${this.utils.EXPLORER_BASE_URL}${txHash}`, Colors.FgGreen, '✅');
-        } else {
-            this.utils.log(`❌ Multicall transaction failed to send. Check logs for details.`, Colors.FgRed, '❌');
+        try {
+            const txHash = await this.web3_ops.sendRawTransactionWithRetries(privateKey, web3, tx);
+            if (txHash) {
+                this.utils.log(`Multicall transaction sent: ${this.utils.EXPLORER_BASE_URL}${txHash}`, 'FG_GREEN', '✅');
+            } else {
+                this.utils.log(`Multicall transaction failed to send. Check logs for details.`, 'FG_RED', '❌');
+                overallOperationSuccess = false;
+            }
+        } catch (e) {
+            this.utils.log(`Error sending multicall transaction: ${e.message}`, 'FG_RED', '❌');
             overallOperationSuccess = false;
         }
-            
+
         return overallOperationSuccess;
     }
 
     async processAccounts(privateKey, address, option, useProxy, rotateProxy) {
-        this.utils.log(`${Colors.FgYELLOW}${Colors.BRIGHT}👤 Account: ${this.utils.maskAccount(privateKey)} | Address: ${address}${Colors.RESET}`);
+        this.utils.log(`Account: ${this.utils.maskAccount(privateKey)} | Address: ${address}`, 'FG_YELLOW', '👤');
         if (option === 1) {
             const success = await this.processPerformLoginAndTransactions(privateKey, address, this.utils.getProxyAgent());
             return success;
