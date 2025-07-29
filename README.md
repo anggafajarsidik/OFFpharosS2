@@ -92,27 +92,6 @@ Create the following files in the project's root directory:
 
 4.  After the initial configuration, the bot will start processing your accounts in a daily loop mode. It will run all selected tasks for each account, wait for the specified daily interval (default 24 hours), and then repeat.
 
-## Logs
-
-The bot provides detailed console logs with colors to indicate different statuses (success, warning, error).
-
-* `➡️`: General information
-* `💰`, `✨`: Balance information
-* `🚀`: Transaction sent
-* `✅`: Transaction/task successfully confirmed
-* `❌`: Transaction/task failed
-* `⚠️`: Warning
-* `⏳`: Waiting/delay
-* `🔄`: Retrying
-* `🛑`: Failed after maximum retries
-* `🔑`: Login/approval
-* `💧`, `🛠️`, `🎨`: AquaFlux tasks
-* `💸`: Primus Tip tasks
-* `⚙️`: AutoStaking Pro tasks
-* `🔮`: Starting task flow
-* `🌟`: Points Check
-* `🌐`: Proxy Information
-
 ## Important Notes
 
 * **This is a Testnet**: Interacting with a testnet means the assets used have no real financial value. However, always exercise caution when interacting with smart contracts.
