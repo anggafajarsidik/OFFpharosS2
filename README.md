@@ -84,14 +84,6 @@ Create the following files in the project's root directory:
     node main.js
     ```
 
-3.  Upon the first run, the bot will prompt you to configure the following parameters in the console:
-    * **MINIMUM & MAXIMUM delay between TXs (seconds)**: This will be used for random delays between transactions and operations.
-    * **Perform AquaFlux tasks?**: Yes/No. If yes, you'll be asked to enter how many AquaFlux mint operations to attempt per wallet.
-    * **Perform Primus Tip tasks?**: Yes/No. If yes, the bot will load user IDs from `usernames.txt`, and you'll be asked to enter how many tips to send per wallet per day.
-    * **Perform AutoStaking Pro tasks?**: Yes/No. If yes, you'll be asked to enter how many AutoStaking Pro transactions (login + faucet + approval + multicall) to attempt per wallet.
-
-4.  After the initial configuration, the bot will start processing your accounts in a daily loop mode. It will run all selected tasks for each account, wait for the specified daily interval (default 24 hours), and then repeat.
-
 ## Important Notes
 
 * **This is a Testnet**: Interacting with a testnet means the assets used have no real financial value. However, always exercise caution when interacting with smart contracts.
