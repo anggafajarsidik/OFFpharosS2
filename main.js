@@ -753,11 +753,10 @@ log('PRIMUS', `Data: ${error.data}`, 'FgRed');
 
             if (runBrokex) {
                 log('SYSTEM', `--- Starting Brokex tasks for ${this.address} ---`, 'Bright', '💼');
-                // Penting: Teruskan getRandomElement dari main.js ke BrokexClient
                 const brokexClient = new BrokexClient(
                     { pk: this.pk, address: this.address, proxyAgent: this.proxyAgent }, 
                     log, 
-                    getRandomElement // Teruskan fungsi getRandomElement
+                    getRandomElement
                 );
                 
                 await brokexClient.initNonce();
