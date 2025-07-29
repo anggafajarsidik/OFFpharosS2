@@ -4,23 +4,30 @@ This bot is designed to automate various tasks on the Pharos testnet network, in
 
 ## Features
 
-* **Multi-Account Support**: Process transactions for multiple accounts using different private keys.
-* **Proxy Support**: Configure individual proxies for each account for anonymity and load distribution.
-* **Automated Faucet**: Automatically get tokens from the Pharos Network faucet.
-* **Daily Check-in**: Perform daily check-in operations on the Pharos Network.
-* **AquaFlux Tokens & NFTs**:
-    * Claim daily C & S tokens from AquaFlux.
-    * Craft CS tokens from C & S.
-    * Mint AquaFlux NFTs.
-* **Primus Tip**: Send tips to randomly selected Primus user IDs.
-* **AutoStaking Pro**: Execute tasks related to AutoStaking Pro.
-* **Reliable Transaction Handling**: Built-in retry logic for sending and confirming transactions.
-* **Dynamic Gas Adjustment**: Adjusts gas prices based on network fee data, with fallback values.
-* **Random Delays**: Employs random delays between operations to simulate human behavior.
-* **Points Check**: Verifies and displays total points for all accounts after each round of operations.
-* **Comprehensive Logging**: Detailed, colored console output to monitor progress and identify issues.
-* **Daily Loop Mode**: Automatically runs all configured tasks every 24 hours after initial setup.
-
+* **Daily Automated Updates:** The script runs in daily cycles to perform various tasks.
+* **Multi-Account Support:** Processes multiple wallets (private keys) in parallel.
+* **Proxy Support:** Each wallet can be configured to use a different proxy for anonymity or to bypass IP restrictions.
+* **Pharos Network Core:**
+    * **Daily Check-in:** Automates the daily check-in process on Pharos Network.
+    * **Faucet Claim:** Claims daily faucet tokens from Pharos Network.
+    * **Point Check:** Displays total points from all accounts.
+* **AquaFlux Features:**
+    * Login and token claiming (C & S).
+    * Crafting CS tokens from C and S.
+    * Token holding verification.
+    * Retrieving signatures for NFT minting.
+    * Minting AquaFlux NFTs.
+* **Primus Tip Feature:**
+    * Sends tips to random usernames from the `usernames.txt` list.
+* **AutoStaking Pro Feature:**
+    * Logs in and performs staking transactions (faucet, approval, multicall).
+* **Brokex (DEX/Perp Futures Testnet) Features:**
+    * Brokex faucet claim.
+    * Opening trading positions (Long/Short) across various pairs.
+    * Closing open trading positions.
+    * Depositing liquidity (LP).
+    * Withdrawing liquidity (LP).
+ 
 ## Requirements
 
 * Node.js (v18 or higher recommended)
