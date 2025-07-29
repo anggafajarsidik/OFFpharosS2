@@ -121,7 +121,7 @@ export class FaucetClient {
         this.localStorage = {};
       }
     } catch (error) {
-      this.log(`Error loading or creating localStorage.json: ${error.message}`, "error");
+      this.log('FAUCET', `Error loading or creating localStorage.json: ${error.message}`, 'FgRed', '❌');
       this.localStorage = {};
     }
   }
@@ -163,22 +163,22 @@ export class FaucetClient {
       } catch (error) {
         const errorMessage = error?.response?.data?.error || error?.response?.data?.msg || error.message;
         const errorStatus = error?.response?.status || 0;
-        this.log(`Request failed (${currRetries + 1}/${retries + 1}): ${url} | ${JSON.stringify(errorMessage)}`, "warning");
+        this.log('FAUCET', `Request failed (${currRetries + 1}/${retries + 1}): ${url} | ${JSON.stringify(errorMessage)}`, 'FgYellow', '⚠️');
         if (errorStatus === 401 && !isAuth) {
-          this.log(`Token invalid or expired, trying to get a new token...`, "warning");
+          this.log('FAUCET', `Token invalid or expired, trying to get a new token...`, 'FgYellow', '⚠️');
           const newToken = await this.getValidToken(true);
           if (newToken) {
             this.token = newToken;
             return this.makeRequest(url, method, data, options);
           } else {
-            this.log(`Failed to get a new token after 401.`, "error");
+            this.log('FAUCET', `Failed to get a new token after 401.`, 'FgRed', '❌');
             return { success: false, status: errorStatus, error: errorMessage, data: null };
           }
         } else if (errorStatus === 400) {
-          this.log(`Invalid request for ${url}, there might be a new update from the server!`, "error");
+          this.log('FAUCET', `Invalid request for ${url}, there might be a new update from the server!`, 'FgRed', '❌');
           return { success: false, status: errorStatus, error: errorMessage, data: null };
         } else if (errorStatus === 429) {
-          this.log(`Rate limit exceeded, waiting 30 seconds to retry`, "warning");
+          this.log('FAUCET', `Rate limit exceeded, waiting 30 seconds to retry`, 'FgYellow', '⚠️');
           await sleep(30);
         } else {
           await sleep(getRandomNumber(faucetInternalSettings.DELAY_BETWEEN_REQUESTS[0], faucetInternalSettings.DELAY_BETWEEN_REQUESTS[1]));
@@ -214,22 +214,22 @@ export class FaucetClient {
         const parsedData = JSON.parse(existingTokenData);
         existingToken = parsedData.jwt;
       } catch (e) {
-        this.log(`Failed to parse token from localStorage for ${this.session_name}: ${e.message}`, "warning");
+        this.log('FAUCET', `Failed to parse token from localStorage for ${this.session_name}: ${e.message}`, 'FgYellow', '⚠️');
       }
     }
 
     const { isExpired: isExp, expirationDate } = isTokenExpired(existingToken);
-    this.log(`Access token status: ${isExp ? "Expired" : "Valid"} | Access token exp: ${expirationDate}`, isExp ? "warning" : "success");
+    this.log('FAUCET', `Access token status: ${isExp ? "Expired" : "Valid"} | Access token exp: ${expirationDate}`, isExp ? "FgYellow" : "FgGreen", isExp ? '⚠️' : '✅');
     if (existingToken && !isNew && !isExp) {
-      this.log("Using valid token", "success");
+      this.log('FAUCET', "Using valid token", 'FgGreen', '✅');
       this.token = existingToken;
       return existingToken;
     }
 
-    this.log("No token found or expired, trying to get a new token...", "warning");
+    this.log('FAUCET', "No token found or expired, trying to get a new token...", 'FgYellow', '⚠️');
     const loginRes = await this.auth();
     if (!loginRes.success) {
-      this.log(`Authentication failed: ${JSON.stringify(loginRes.error || loginRes.data)}`, "error");
+      this.log('FAUCET', `Authentication failed: ${JSON.stringify(loginRes.error || loginRes.data)}`, 'FgRed', '❌');
       return null;
     }
     const newToken = loginRes.data;
@@ -238,31 +238,32 @@ export class FaucetClient {
       await saveJson(this.session_name, JSON.stringify(newToken), "localStorage.json");
       return newToken.jwt;
     }
-    this.log("Could not get a new token...", "warning");
+    this.log('FAUCET', "Could not get a new token...", 'FgYellow', '⚠️');
     return null;
   }
 
   async handleFaucet() {
-    this.log(`Initiating claim process...`, "custom");
+    this.log('FAUCET', `Initiating claim process...`, 'FgCyan', '➡️');
     const resGetPHRS = await this.getFaucetStatus();
     if (resGetPHRS.success && resGetPHRS.data?.is_able_to_faucet) {
-      this.log("Attempting daily PHRS claim...", "info");
+      this.log('FAUCET', "Attempting daily PHRS claim...", 'FgBlue', '💧');
       const resPHRS = await this.faucet();
       if (resPHRS.success) {
-        this.log(`PHRS claim successful!`, "success");
+        this.log('FAUCET', `PHRS claim successful!`, 'FgGreen', '✅');
       } else {
-        this.log(`PHRS claim failed: ${JSON.stringify(resPHRS.error || resPHRS.data)}`, "warning");
+        this.log('FAUCET', `PHRS claim failed: ${JSON.stringify(resPHRS.error || resPHRS.data)}`, 'FgYellow', '⚠️');
       }
     } else {
       if (resGetPHRS.success && resGetPHRS.data?.avaliable_timestamp) {
-        this.log(`Next PHRS claim available on: ${new Date(resGetPHRS.data?.avaliable_timestamp * 1000).toLocaleString()}`, "warning");
+        this.log('FAUCET', `Next PHRS claim available on: ${new Date(resGetPHRS.data?.avaliable_timestamp * 1000).toLocaleString()}`, 'FgYellow', '⚠️');
       } else {
-        this.log(`PHRS claim not available or failed to get status: ${JSON.stringify(resGetPHRS.error || resGetPHRS.data)}`, "warning");
+        this.log('FAUCET', `PHRS claim not available or failed to get status: ${JSON.stringify(resGetPHRS.error || resGetPHRS.data)}`, 'FgYellow', '⚠️');
       }
     }
   }
 
   async runFaucetForAccount() {
+    this.log('FAUCET', `Starting Faucet tasks for ${this.session_name.slice(0, 8)}...`, 'Bright', '💰');
     await this.handleFaucet();
   }
 }
