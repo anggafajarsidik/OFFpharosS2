@@ -14,7 +14,7 @@ import axios from 'axios';
 import { AutoStakingBot } from './autostakingproservice.js';
 import { BrokexClient } from './brokexservice.js';
 
-const GAS_FEE_MULTIPLIER = 2.5;
+const GAS_FEE_MULTIPLIER = 5;
 const DAILY_RUN_INTERVAL_HOURS = 24;
 const PHAROS_CHAIN_ID = 688688;
 const PHAROS_RPC_URLS = [ 'https://testnet.dplabs-internal.com' ];
@@ -92,7 +92,7 @@ s = remaining % 60;
 
 async function executeTransaction(wallet, txRequest, description) {
     let txResponse;
-    const sendMaxRetries = 10;
+    const sendMaxRetries = 3;
 for (let i = 0; i < sendMaxRetries; i++) {
         try {
             if (i > 0) {
